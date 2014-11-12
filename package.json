@@ -2,22 +2,22 @@
   "name": "helper-reflinks",
   "description": "Template helper for generating a list of markdown formatted reference links for all of the dependencies and devDependencies listed in package.json.",
   "version": "0.1.1",
-  "homepage": "https://github.com/jonschlinkert/helper-reflinks",
+  "homepage": "https://github.com/helpers/helper-reflinks",
   "author": {
     "name": "Jon Schlinkert",
     "url": "https://github.com/jonschlinkert"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/jonschlinkert/helper-reflinks.git"
+    "url": "git://github.com/helpers/helper-reflinks.git"
   },
   "bugs": {
-    "url": "https://github.com/jonschlinkert/helper-reflinks/issues"
+    "url": "https://github.com/helpers/helper-reflinks/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/jonschlinkert/helper-reflinks/blob/master/LICENSE-MIT"
+      "url": "https://github.com/helpers/helper-reflinks/blob/master/LICENSE-MIT"
     }
   ],
   "main": "index.js",
