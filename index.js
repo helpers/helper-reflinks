@@ -10,6 +10,6 @@
 var Lookup = require('lookup-deps');
 var deps = new Lookup();
 
-module.exports = function (locals) {
-  return deps.reflinks('*');
+module.exports = function (patterns) {
+  return deps.reflinks(patterns || '*');
 };
