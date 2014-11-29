@@ -1,7 +1,7 @@
 {
   "name": "helper-reflinks",
-  "description": "Template helper for generating a list of markdown formatted reference links for all of the dependencies and devDependencies listed in package.json.",
-  "version": "0.1.1",
+  "description": "Template helper for generating a list of markdown formatted reference links to github repos for the tree of dependencies and devDependencies listed in package.json.",
+  "version": "0.2.0",
   "homepage": "https://github.com/helpers/helper-reflinks",
   "author": {
     "name": "Jon Schlinkert",
@@ -27,7 +27,12 @@
   "scripts": {
     "test": "mocha -R spec"
   },
+  "dependencies": {
+    "lookup-deps": "^0.2.4"
+  },
   "devDependencies": {
+    "handlebars": "^2.0.0",
+    "lodash": "^2.4.1",
     "mocha": "*",
     "should": "*",
     "verb": "^0.3.0"
@@ -41,13 +46,11 @@
     "link",
     "links",
     "markdown",
+    "md",
     "ref",
     "reference",
     "reflink",
     "templates",
     "verb"
-  ],
-  "dependencies": {
-    "lookup-deps": "^0.2.4"
-  }
+  ]
 }
