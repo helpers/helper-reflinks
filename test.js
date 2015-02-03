@@ -23,12 +23,12 @@ describe('helper reflinks', function () {
   });
 
   it('should work as a lodash helper:', function () {
-    test(_.template('<%= reflinks() %>', {}, {imports: {reflinks: reflinksHelper}})).should.be.true;
+    test(_.template('<%= reflinks() %>', {imports: {reflinks: reflinksHelper}})({})).should.be.true;
   });
 
   it('should work as a lodash mixin:', function () {
     _.mixin({reflinks: reflinksHelper});
-    test(_.template('<%= _.reflinks() %>', {})).should.be.true;
+    test(_.template('<%= _.reflinks() %>')({})).should.be.true;
   });
 
   it('should work as a handlebars helper:', function () {
