@@ -1,12 +1,13 @@
 /*!
- * helper-reflinks <https://github.com/jonschlinkert/helper-reflinks>
+ * helper-reflinks <https://github.com/helpers/helper-reflinks>
  *
  * Copyright (c) 2014-2015, Jon Schlinkert.
- * Licensed under the MIT License
+ * Licensed under the MIT License.
  */
 
 'use strict';
 
+/* deps:mocha */
 var should = require('should');
 var handlebars = require('handlebars');
 var _ = require('lodash');
