@@ -16,7 +16,6 @@ var chalk = require('chalk');
 var symbol = require('log-symbols');
 var parse = require('parse-github-url');
 var stringify = require('stringify-github-url');
-var pkg = require('load-module-pkg');
 var config = require('load-pkg');
 var mdu = require('markdown-utils');
 
@@ -57,6 +56,7 @@ function reflinks(repos, options, cb) {
   }
 
   var deps = reflinks.sync(options);
+  repos = repos || '';
 
   if (!repos || !repos.length) {
     if (typeof cb === 'function') {
