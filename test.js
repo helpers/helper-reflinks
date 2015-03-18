@@ -10,30 +10,48 @@
 /* deps:mocha */
 var should = require('should');
 var handlebars = require('handlebars');
+var reflinks = require('./');
 var _ = require('lodash');
-var reflinksHelper = require('./');
 
-function test(str) {
-  return /\[lookup-deps\]/.test(str);
+function render (str, settings, ctx, cb) {
+  if (typeof ctx === 'function') {
+    cb = ctx; ctx = {};
+  }
+  cb(null, _.template(str, settings)(ctx));
 }
 
-describe('helper reflinks', function () {
-  var links = reflinksHelper();
+describe('async', function () {
+  it('should generate reflinks:', function () {
+    reflinks('').should.match(/async/);
+  });
+
+  it('should generate reflinks for a repo:', function (done) {
+    reflinks('async', function  (err, res) {
+      res.should.match(/async/);
+      done();
+    });
+  });
+
+  it('should work as an async helper:', function (done) {
+    render('<%= reflinks("") %>', {imports: {reflinks: reflinks}}, function (err, res) {
+      res.should.match(/async/);
+      done();
+    })
+  });
+});
+
+describe('sync', function () {
   it('should return a formatted reflinks statement:', function () {
-    test(links).should.be.true;
+    reflinks.sync('').should.match(/async/);
   });
 
   it('should work as a lodash helper:', function () {
-    test(_.template('<%= reflinks() %>', {imports: {reflinks: reflinksHelper}})({})).should.be.true;
-  });
-
-  it('should work as a lodash mixin:', function () {
-    _.mixin({reflinks: reflinksHelper});
-    test(_.template('<%= _.reflinks() %>')({})).should.be.true;
+    var actual = _.template('<%= reflinks("") %>', {imports: {reflinks: reflinks}})();
+    actual.should.match(/async/);
   });
 
   it('should work as a handlebars helper:', function () {
-    handlebars.registerHelper('reflinks', reflinksHelper);
-    test(handlebars.compile('{{reflinks "*"}}')()).should.be.true;
+    handlebars.registerHelper('reflinks', reflinks);
+    handlebars.compile('{{reflinks ""}}')().should.match(/async/);
   });
 });
