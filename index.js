@@ -125,7 +125,7 @@ function linkifyDeps(pkg) {
     var ele = node_modules(dep);
     var ref = homepage(ele);
     if (ref) {
-      res += linkify(ref.repo, ref.url);
+      res += linkify(ref.repo, ref.url) + '\n';
     }
   }
   return res;
