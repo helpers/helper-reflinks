@@ -103,7 +103,7 @@ function getRepos(repos, options, cb) {
 }
 
 function linkify(repo, url) {
-  return mdu.reference(repo, url) + '\n';
+  return mdu.reference(repo, url);
 }
 
 function listDeps(pkg) {
