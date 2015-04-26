@@ -16,7 +16,6 @@ var chalk = require('chalk');
 var symbol = require('log-symbols');
 var parse = require('parse-github-url');
 var stringify = require('stringify-github-url');
-var config = require('load-pkg');
 var mdu = require('markdown-utils');
 
 /**
@@ -26,6 +25,29 @@ var mdu = require('markdown-utils');
 module.exports = reflinks;
 
 /**
+ * Config cache
+ */
+
+var config = {};
+
+/**
+ * Load package.json, caching results to avoid multiple
+ * calls to the file system
+ */
+
+if (typeof config.pkg === 'undefined') {
+  config.pkg = require('load-pkg');
+}
+
+/**
+ * Get keys from `dependencies`
+ */
+
+if (typeof config.keys === 'undefined') {
+  config.keys = keys(config.pkg.dependencies || {});
+}
+
+/**
  * Generate a reflink or list of reflinks for npm modules.
  *
  *   - If no repo names are passed, reflinks are generated for all locally-installed
@@ -33,103 +55,147 @@ module.exports = reflinks;
  *   - If names are passed, reflinks are generated both from matching locally-
  *     installed dependencies and, if necessary, by querying npm.
  *
- * @param  {Array} repos [description]
- * @param  {Function} cb [description]
+ * @param  {String|Array} `repos` Repo name or array of names.
+ * @param  {Object} `options`
+ * @param  {Function} `cb`
  * @return {Array}
  */
 
-function reflinks(repos, options, cb) {
+function reflinks(repos, opts, cb) {
   if (typeof repos === 'function') {
     cb = repos;
-    options = {};
+    opts = {};
     repos = null;
   }
-  if (typeof options === 'function') {
-    cb = options;
-    options = {};
+  if (typeof opts === 'function') {
+    cb = opts;
+    opts = {};
   }
 
-  options = options || {};
-
-  if (typeof repos !== 'string' && !Array.isArray(repos)) {
-    throw new TypeError('helper-reflinks expects a string or array.');
-  }
-
-  var deps = reflinks.sync(options);
-  repos = repos || '';
+  repos = repos || [];
+  opts = opts || {};
+  var deps = reflinks.sync(repos, opts);
 
   if (!repos || !repos.length) {
-    if (typeof cb === 'function') {
-      return cb(null, deps);
-    }
-    return deps;
+    return typeof cb === 'function'
+      ? cb(null, deps)
+      : deps;
   }
 
   // generate reflinks from npm packages
-  getRepos(repos, options, cb);
+  getRepos(arrayify(repos), opts, function (err, res) {
+    if (err) return cb(err);
+    if (opts.node_modules === true) {
+      res += '\n' + deps;
+    }
+    cb(null, res);
+  });
 };
 
-reflinks.sync = function (options) {
-  message('node_modules', options);
-  return linkifyDeps(config);
+/**
+ * Generate a list of markdown-formatted reflinks for all
+ * dependencies currently listed in `node_modules`.
+ *
+ * @param  {Array|String} `repos` Repo name or array of repo names
+ * @param  {Object} `opts`
+ * @param  {Function} `cb` Callback function
+ * @return {String}
+ */
+
+reflinks.sync = function (repos, opts) {
+  message('node_modules', opts);
+
+  if (!config.keys.length) return '';
+  repos = repos ? arrayify(repos) : null;
+  var keys = [];
+
+  var len = repos && repos.length;
+  if (len) {
+    while (len--) {
+      var name = repos[len];
+      if (config.keys.indexOf(name) !== -1) {
+        keys.push(name);
+      }
+    }
+  } else {
+    keys = config.keys;
+  }
+  return linkifyDeps(keys);
 };
 
-function getRepos(repos, options, cb) {
+/**
+ * Get package.json files from npm for an array of repositories,
+ * and use them to generate a list of markdown-formatted reflinks.
+ *
+ * @param  {Array|String} `repos` Repo name or array of repo names
+ * @param  {Object} `opts`
+ * @param  {Function} `cb` Callback function
+ * @return {String}
+ */
+
+function getRepos(repos, opts, cb) {
   var async = require('async');
   var get = require('get-pkgs');
 
-  if (typeof options === 'function') {
-    cb = options;
-    options = {};
+  if (typeof opts === 'function') {
+    cb = opts;
+    opts = {};
   }
 
-  message('npm', options);
+  opts = opts || {};
+  message('npm', opts);
 
   get(repos, function (err, pkgs) {
     if (err) {
       console.error(chalk.red('helper-reflinks: %j'), err);
       return cb(err);
     }
-    async.mapSeries(pkgs, function (pkg, next) {
-      next(null, linkify(pkg.name, pkg.homepage));
+
+    pkgs = pkgs.sort(function (a, b) {
+      var aname = a.name.charAt(0);
+      var bname = b.name.charAt(0);
+      return aname > bname
+        ? 1 : aname < bname
+        ? -1 : 0;
+    });
+
+    async.reduce(pkgs, [], function (acc, pkg, next) {
+      next(null, acc.concat(mdu.reference(pkg.name, pkg.homepage)));
     }, function (err, arr) {
-      if (err) {
-        console.error(chalk.red('helper-reflinks: %j'), err);
-        return cb(err);
-      }
+      if (err) return cb(err);
       cb(null, arr.join('\n'));
     });
   });
 }
 
-function linkify(repo, url) {
-  return mdu.reference(repo, url);
-}
+/**
+ * Generate a reference link for each module name in the array
+ * of `keys`, and return a formatted list.
+ *
+ * @param  {Array} `keys` Array of module names.
+ * @return {String} Markdown reflinks
+ */
 
-function listDeps(pkg) {
-  var deps = Object.keys(pkg.dependencies) || [];
-  return deps.sort();
-}
-
-function linkifyDeps(pkg) {
-  if (!pkg.dependencies) {
-    return null;
-  }
-
-  var deps = listDeps(pkg);
-  var len = deps.length, i = 0;
+function linkifyDeps(keys) {
+  var len = keys.length, i = 0;
   var res = '';
-
   while (len--) {
-    var dep = deps[i++];
+    var dep = keys[i++];
     var ele = node_modules(dep);
     var ref = homepage(ele);
     if (ref) {
-      res += linkify(ref.repo, ref.url) + '\n';
+      res += mdu.reference(ref.repo, ref.url) + '\n';
     }
   }
   return res;
 }
+
+/**
+ * Get the package.json from the given module in node_modules.
+ *
+ * @param  {String} `name` The name of the module
+ * @return {Object}
+ */
 
 function node_modules(name) {
   try {
@@ -138,6 +204,13 @@ function node_modules(name) {
   } catch(err) {}
   return {};
 }
+
+/**
+ * Get the homepage from the given module in node_modules.
+ *
+ * @param  {Object} `pkg` package.json object for the module
+ * @return {Object}
+ */
 
 function homepage(pkg) {
   var res = {};
@@ -151,9 +224,28 @@ function homepage(pkg) {
   return res;
 }
 
-function message(place, options) {
-  if (options && options.silent !== true) {
-    var msg = '  helper-reflinks: generating reflinks from ' + place + ' info.';
+/**
+ * Output a formatted message in the console.
+ *
+ * @param  {String} `origin` The location of the package (node_modules or npm)
+ * @param  {Object} `opts` Options
+ */
+
+function message(origin, opts) {
+  if (opts && opts.silent !== true) {
+    var msg = '  helper-reflinks: generating reflinks from ' + origin + ' info.';
     console.log('  ' + symbol.success + chalk.gray(msg));
   }
+}
+
+/**
+ * Utils
+ */
+
+function keys(o) {
+  return Object.keys(o).sort();
+}
+
+function arrayify(val) {
+  return Array.isArray(val) ? val : [val];
 }
