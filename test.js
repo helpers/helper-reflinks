@@ -27,14 +27,23 @@ describe('async', function () {
 
   it('should generate reflinks for a repo:', function (done) {
     reflinks('async', function  (err, res) {
-      res.should.match(/async/);
+      res.should.equal('[async]: https://github.com/caolan/async');
       done();
     });
   });
 
   it('should work as an async helper:', function (done) {
-    render('<%= reflinks("") %>', {imports: {reflinks: reflinks}}, function (err, res) {
+    render('<%= reflinks() %>', {imports: {reflinks: reflinks}}, function (err, res) {
       res.should.match(/async/);
+      done();
+    })
+  });
+
+  it('should combine both node_modules and with specified repos:', function (done) {
+    render('<%= reflinks("", {node_modules: true}) %>', {imports: {reflinks: reflinks}}, function (err, res) {
+      res.should.match(/async/);
+      res.should.match(/chalk/);
+      res.should.match(/load-pkg/);
       done();
     })
   });
