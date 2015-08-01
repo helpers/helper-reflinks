@@ -42,7 +42,6 @@ describe('async', function () {
   it('should combine both node_modules and with specified repos:', function (done) {
     render('<%= reflinks("", {node_modules: true}) %>', {imports: {reflinks: reflinks}}, function (err, res) {
       res.should.match(/async/);
-      res.should.match(/chalk/);
       res.should.match(/load-pkg/);
       done();
     })

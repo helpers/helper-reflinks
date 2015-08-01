@@ -12,11 +12,15 @@
  */
 
 var path = require('path');
-var chalk = require('chalk');
-var symbol = require('log-symbols');
+var red = require('ansi-red');
+var gray = require('ansi-gray');
+var green = require('ansi-green');
+var success = require('success-symbol');
 var parse = require('parse-github-url');
 var stringify = require('stringify-github-url');
+var reduce = require('async-array-reduce');
 var mdu = require('markdown-utils');
+var get = require('get-pkgs');
 
 /**
  * Expose `reflinks`
@@ -90,7 +94,7 @@ function reflinks(repos, opts, cb) {
     }
     cb(null, res);
   });
-};
+}
 
 /**
  * Generate a list of markdown-formatted reflinks for all
@@ -134,9 +138,6 @@ reflinks.sync = function (repos, opts) {
  */
 
 function getRepos(repos, opts, cb) {
-  var async = require('async');
-  var get = require('get-pkgs');
-
   if (typeof opts === 'function') {
     cb = opts;
     opts = {};
@@ -147,20 +148,18 @@ function getRepos(repos, opts, cb) {
 
   get(repos, function (err, pkgs) {
     if (err) {
-      console.error(chalk.red('helper-reflinks: %j'), err);
+      console.error(red('helper-reflinks: %j'), err);
       return cb(err);
     }
 
     pkgs = pkgs.sort(function (a, b) {
-      var aname = a.name.charAt(0);
-      var bname = b.name.charAt(0);
-      return aname > bname
-        ? 1 : aname < bname
-        ? -1 : 0;
+      return a.name.localeCompare(b.name);
     });
 
-    async.reduce(pkgs, [], function (acc, pkg, next) {
-      next(null, acc.concat(mdu.reference(pkg.name, pkg.homepage)));
+    reduce(pkgs, [], function (acc, pkg, next) {
+      var link = mdu.reference(pkg.name, pkg.homepage);
+      link = link.replace(/#readme$/, '');
+      next(null, acc.concat(link));
     }, function (err, arr) {
       if (err) return cb(err);
       cb(null, arr.join('\n'));
@@ -234,7 +233,7 @@ function homepage(pkg) {
 function message(origin, opts) {
   if (opts && opts.silent !== true) {
     var msg = '  helper-reflinks: generating reflinks from ' + origin + ' info.';
-    console.log('  ' + symbol.success + chalk.gray(msg));
+    console.log('  ' + green(success) + gray(msg));
   }
 }
 
