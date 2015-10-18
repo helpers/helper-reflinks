@@ -7,8 +7,8 @@
 
 'use strict';
 
-/* deps:mocha */
-var should = require('should');
+require('mocha');
+require('should');
 var handlebars = require('handlebars');
 var reflinks = require('./');
 var _ = require('lodash');
