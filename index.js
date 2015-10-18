@@ -7,26 +7,8 @@
 
 'use strict';
 
-/**
- * Module dependencies
- */
-
 var path = require('path');
-var red = require('ansi-red');
-var gray = require('ansi-gray');
-var green = require('ansi-green');
-var success = require('success-symbol');
-var parse = require('parse-github-url');
-var stringify = require('stringify-github-url');
-var reduce = require('async-array-reduce');
-var mdu = require('markdown-utils');
-var get = require('get-pkgs');
-
-/**
- * Expose `reflinks`
- */
-
-module.exports = reflinks;
+var utils = require('./utils');
 
 /**
  * Config cache
@@ -146,9 +128,9 @@ function getRepos(repos, opts, cb) {
   opts = opts || {};
   message('npm', opts);
 
-  get(repos, function (err, pkgs) {
+  utils.get(repos, function (err, pkgs) {
     if (err) {
-      console.error(red('helper-reflinks: %j'), err);
+      console.error(utils.red('helper-reflinks: %j'), err);
       return cb(err);
     }
 
@@ -156,8 +138,8 @@ function getRepos(repos, opts, cb) {
       return a.name.localeCompare(b.name);
     });
 
-    reduce(pkgs, [], function (acc, pkg, next) {
-      var link = mdu.reference(pkg.name, pkg.homepage);
+    utils.reduce(pkgs, [], function (acc, pkg, next) {
+      var link = utils.mdu.reference(pkg.name, pkg.homepage);
       link = link.replace(/#readme$/, '');
       next(null, acc.concat(link));
     }, function (err, arr) {
@@ -183,7 +165,7 @@ function linkifyDeps(keys) {
     var ele = node_modules(dep);
     var ref = homepage(ele);
     if (ref) {
-      res += mdu.reference(ref.repo, ref.url) + '\n';
+      res += utils.mdu.reference(ref.repo, ref.url) + '\n';
     }
   }
   return res;
@@ -215,11 +197,11 @@ function homepage(pkg) {
   var res = {};
   if (!pkg.repository) return null;
   if (typeof pkg.repository === 'string') {
-    res = parse(pkg.repository);
+    res = utils.parse(pkg.repository);
   } else if (typeof pkg.repository === 'object') {
-    res = parse(pkg.repository.url);
+    res = utils.parse(pkg.repository.url);
   }
-  res.url = stringify(res.user, res.repo);
+  res.url = utils.stringify(res.user, res.repo);
   return res;
 }
 
@@ -233,7 +215,7 @@ function homepage(pkg) {
 function message(origin, opts) {
   if (opts && opts.silent !== true) {
     var msg = '  helper-reflinks: generating reflinks from ' + origin + ' info.';
-    console.log('  ' + green(success) + gray(msg));
+    console.log('  ' + utils.green(utils.success) + utils.gray(msg));
   }
 }
 
@@ -248,3 +230,9 @@ function keys(o) {
 function arrayify(val) {
   return Array.isArray(val) ? val : [val];
 }
+
+/**
+ * Expose `reflinks`
+ */
+
+module.exports = reflinks;
