@@ -11,8 +11,10 @@ require('success-symbol', 'success');
 require('parse-github-url', 'parse');
 require('stringify-github-url', 'stringify');
 require('async-array-reduce', 'reduce');
+require('extend-shallow', 'extend');
 require('markdown-utils', 'mdu');
-require('get-pkgs', 'get');
+require('get-value', 'get');
+require('get-pkgs');
 require = fn;
 
 /**
