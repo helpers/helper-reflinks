@@ -41,8 +41,8 @@
     "engine-handlebars": "^0.8.0",
     "handlebars": "^3.0.3",
     "lodash": "^3.10.0",
-    "mocha": "^2.2.5",
-    "should": "^7.0.2",
+    "mocha": "*",
+    "should": "*",
     "verb": "^0.8.0"
   },
   "keywords": [
@@ -63,12 +63,12 @@
   ],
   "verb": {
     "related": {
-      "description": "",
       "list": [
         "helper-related",
         "template-helpers",
         "handlebars-helpers"
-      ]
+      ],
+      "description": ""
     }
   }
 }
