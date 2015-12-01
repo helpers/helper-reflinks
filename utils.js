@@ -4,18 +4,38 @@ var utils = require('lazy-cache')(require);
 var fn = require;
 
 require = utils;
-require('ansi-red', 'red');
-require('ansi-gray', 'gray');
-require('ansi-green', 'green');
 require('success-symbol', 'success');
 require('parse-github-url', 'parse');
 require('stringify-github-url', 'stringify');
 require('async-array-reduce', 'reduce');
 require('extend-shallow', 'extend');
-require('markdown-utils', 'mdu');
+require('markdown-reference', 'referenceLink');
 require('get-value', 'get');
 require('get-pkgs');
 require = fn;
+
+/**
+ * Utils
+ */
+
+utils.keys = function (o) {
+  return Object.keys(o).sort();
+};
+
+utils.arrayify = function (val) {
+  if (!val) return [];
+  return Array.isArray(val) ? val : [val];
+};
+
+utils.remove = function (arr, items) {
+  var len = arr.length;
+  while (len--) {
+    if (items.indexOf(arr[len]) > -1) {
+      arr.splice(1, len);
+    }
+  }
+  return arr;
+};
 
 /**
  * Expose utils

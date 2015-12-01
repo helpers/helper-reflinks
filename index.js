@@ -8,9 +8,10 @@
 'use strict';
 
 var path = require('path');
+var colors = require('ansi-colors');
 var utils = require('./utils');
 
-module.exports = function (options) {
+module.exports = function(options) {
   options = options || {};
   var configProp = options.configProp || 'reflinks';
 
@@ -26,7 +27,7 @@ module.exports = function (options) {
    */
 
   if (typeof config.pkg === 'undefined') {
-    config.pkg = require('load-pkg');
+    config.pkg = require('load-pkg')(process.cwd());
   }
 
   /**
@@ -34,7 +35,7 @@ module.exports = function (options) {
    */
 
   if (typeof config.keys === 'undefined') {
-    config.keys = keys(config.pkg.dependencies || {});
+    config.keys = utils.keys(config.pkg.dependencies || {});
   }
 
   /**
@@ -53,37 +54,40 @@ module.exports = function (options) {
 
   function reflinks(repos, opts, cb) {
     if (typeof repos === 'function') {
-      cb = repos;
-      opts = {};
-      repos = null;
+      return reflinks(null, {}, repos);
     }
+
     if (typeof opts === 'function') {
-      cb = opts;
-      opts = {};
+      return reflinks(repos, {}, opts);
     }
 
     repos = repos || [];
     opts = utils.extend({}, options, opts);
 
+    if (this && this.options) {
+      opts = utils.extend({}, this.options, opts);
+    }
 
     // allow a prop-string to be passed: eg: `related("a.b.c")`,
     // so that `get()` can resolve the value from the context
     if (this && this.context && typeof repos === 'string') {
-      opts = utils.extend({}, this.options, opts);
       var res = utils.get(this.context, [configProp, repos].join('.'));
       if (res) repos = res;
+    }
+
+    opts.remove = utils.arrayify(opts.remove);
+    if (opts.remove.length) {
+      utils.remove(repos, opts.remove);
     }
 
     var deps = reflinks.sync(repos, opts);
 
     if (!repos || !repos.length) {
-      return typeof cb === 'function'
-        ? cb(null, deps)
-        : deps;
+      return typeof cb === 'function' ? cb(null, deps) : deps;
     }
 
     // generate reflinks from npm packages
-    getRepos(arrayify(repos), opts, function (err, res) {
+    getRepos(utils.arrayify(repos), opts, function(err, res) {
       if (err) return cb(err);
       if (opts.node_modules === true) {
         res += '\n' + deps;
@@ -102,11 +106,11 @@ module.exports = function (options) {
    * @return {String}
    */
 
-  reflinks.sync = function (repos, opts) {
+  reflinks.sync = function(repos, opts) {
     message('node_modules', opts);
 
     if (!config.keys.length) return '';
-    repos = repos ? arrayify(repos) : null;
+    repos = repos ? utils.arrayify(repos) : null;
     var keys = [];
 
     var len = repos && repos.length;
@@ -142,21 +146,21 @@ module.exports = function (options) {
     opts = opts || {};
     message('npm', opts);
 
-    utils.getPkgs(repos, function (err, pkgs) {
+    utils.getPkgs(repos, function(err, pkgs) {
       if (err) {
-        console.error(utils.red('helper-reflinks: %j'), err);
+        console.error(colors.red('helper-reflinks: %j'), err);
         return cb(err);
       }
 
-      pkgs = pkgs.sort(function (a, b) {
+      pkgs = pkgs.sort(function(a, b) {
         return a.name.localeCompare(b.name);
       });
 
-      utils.reduce(pkgs, [], function (acc, pkg, next) {
-        var link = utils.mdu.reference(pkg.name, pkg.homepage);
+      utils.reduce(pkgs, [], function(acc, pkg, next) {
+        var link = utils.referenceLink(pkg.name, pkg.homepage);
         link = link.replace(/#readme$/, '');
         next(null, acc.concat(link));
-      }, function (err, arr) {
+      }, function(err, arr) {
         if (err) return cb(err);
         cb(null, arr.join('\n'));
       });
@@ -179,7 +183,7 @@ module.exports = function (options) {
       var ele = node_modules(dep);
       var ref = homepage(ele);
       if (ref) {
-        res += utils.mdu.reference(ref.repo, ref.url) + '\n';
+        res += utils.referenceLink(ref.repo, ref.url) + '\n';
       }
     }
     return res;
@@ -229,20 +233,8 @@ module.exports = function (options) {
   function message(origin, opts) {
     if (opts && opts.silent !== true) {
       var msg = '  helper-reflinks: generating reflinks from ' + origin + ' info.';
-      console.log('  ' + utils.green(utils.success) + utils.gray(msg));
+      console.log('  ' + colors.green(utils.success) + colors.gray(msg));
     }
-  }
-
-  /**
-   * Utils
-   */
-
-  function keys(o) {
-    return Object.keys(o).sort();
-  }
-
-  function arrayify(val) {
-    return Array.isArray(val) ? val : [val];
   }
 
   /**
