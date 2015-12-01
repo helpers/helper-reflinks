@@ -9,6 +9,7 @@ require('parse-github-url', 'parse');
 require('stringify-github-url', 'stringify');
 require('async-array-reduce', 'reduce');
 require('extend-shallow', 'extend');
+require('is-valid-glob');
 require('markdown-reference', 'referenceLink');
 require('get-value', 'get');
 require('get-pkgs');

@@ -8,6 +8,7 @@
 'use strict';
 
 var path = require('path');
+var success = require('success-symbol');
 var colors = require('ansi-colors');
 var utils = require('./utils');
 
@@ -27,7 +28,7 @@ module.exports = function(options) {
    */
 
   if (typeof config.pkg === 'undefined') {
-    config.pkg = require('load-pkg')(process.cwd());
+    config.pkg = require('load-pkg').sync(process.cwd());
   }
 
   /**
@@ -107,8 +108,6 @@ module.exports = function(options) {
    */
 
   reflinks.sync = function(repos, opts) {
-    message('node_modules', opts);
-
     if (!config.keys.length) return '';
     repos = repos ? utils.arrayify(repos) : null;
     var keys = [];
@@ -123,6 +122,10 @@ module.exports = function(options) {
       }
     } else {
       keys = config.keys;
+    }
+
+    if (opts && opts.verbose && opts.sync) {
+      console.log(' ' + colors.green(success) + ' created ' + keys.length + ' reference links from node_modules packages');
     }
     return linkifyDeps(keys);
   };
@@ -144,7 +147,11 @@ module.exports = function(options) {
     }
 
     opts = opts || {};
-    message('npm', opts);
+
+    if (opts.verbose) {
+      spinner();
+      process.stdout.write(' creating reference links from npm data');
+    }
 
     utils.getPkgs(repos, function(err, pkgs) {
       if (err) {
@@ -162,6 +169,13 @@ module.exports = function(options) {
         next(null, acc.concat(link));
       }, function(err, arr) {
         if (err) return cb(err);
+
+        if (opts.verbose) {
+          stopSpinner();
+          process.stdout.clearLine();
+          process.stdout.cursorTo(0);
+          process.stdout.write(' ' + colors.green(success) + ' created ' + pkgs.length + ' reference links from npm data\n');
+        }
         cb(null, arr.join('\n'));
       });
     });
@@ -223,18 +237,24 @@ module.exports = function(options) {
     return res;
   }
 
-  /**
-   * Output a formatted message in the console.
-   *
-   * @param  {String} `origin` The location of the package (node_modules or npm)
-   * @param  {Object} `opts` Options
-   */
+  function spinner() {
+    var arr = ['|', '/', '-', '\\', '-'];
+    var len = arr.length, i = 0;
+    spinner.timer = setInterval(function () {
+      process.stdout.clearLine();
+      process.stdout.cursorTo(1);
+      process.stdout.write(' \u001b[0G' + arr[i++ % len] + ' ');
+    }, 200);
+  }
 
-  function message(origin, opts) {
-    if (opts && opts.silent !== true) {
-      var msg = '  helper-reflinks: generating reflinks from ' + origin + ' info.';
-      console.log('  ' + colors.green(utils.success) + colors.gray(msg));
-    }
+  function stopSpinner() {
+    process.stdout.write('\u001b[2K');
+    clearInterval(spinner.timer);
+  }
+
+  if (utils.isValidGlob(options)) {
+    reflinks.apply(null, arguments);
+    return;
   }
 
   /**
