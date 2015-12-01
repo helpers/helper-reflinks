@@ -149,8 +149,7 @@ module.exports = function(options) {
     opts = opts || {};
 
     if (opts.verbose) {
-      spinner();
-      process.stdout.write(' creating reference links from npm data');
+      spinner('creating reference links from npm data');
     }
 
     utils.getPkgs(repos, function(err, pkgs) {
@@ -171,10 +170,7 @@ module.exports = function(options) {
         if (err) return cb(err);
 
         if (opts.verbose) {
-          stopSpinner();
-          process.stdout.clearLine();
-          process.stdout.cursorTo(0);
-          process.stdout.write(' ' + colors.green(success) + ' created ' + pkgs.length + ' reference links from npm data\n');
+          stopSpinner(colors.green(success) + ' created list of reference links from npm data\n');
         }
         cb(null, arr.join('\n'));
       });
@@ -237,18 +233,20 @@ module.exports = function(options) {
     return res;
   }
 
-  function spinner() {
+  function spinner(msg) {
     var arr = ['|', '/', '-', '\\', '-'];
     var len = arr.length, i = 0;
     spinner.timer = setInterval(function () {
       process.stdout.clearLine();
       process.stdout.cursorTo(1);
-      process.stdout.write(' \u001b[0G' + arr[i++ % len] + ' ');
+      process.stdout.write('\u001b[0G ' + arr[i++ % len] + ' ' + msg);
     }, 200);
   }
 
-  function stopSpinner() {
-    process.stdout.write('\u001b[2K');
+  function stopSpinner(msg) {
+    process.stdout.clearLine();
+    process.stdout.cursorTo(1);
+    process.stdout.write('\u001b[2K' + msg);
     clearInterval(spinner.timer);
   }
 
