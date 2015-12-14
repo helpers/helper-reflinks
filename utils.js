@@ -4,6 +4,7 @@ var utils = require('lazy-cache')(require);
 var fn = require;
 
 require = utils;
+require('data-store', 'Store');
 require('success-symbol', 'success');
 require('parse-github-url', 'parse');
 require('stringify-github-url', 'stringify');

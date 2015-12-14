@@ -14,29 +14,29 @@ var utils = require('./utils');
 
 module.exports = function(options) {
   options = options || {};
-  var configProp = options.configProp || 'reflinks';
+  var store = new utils.Store('helper-reflinks');
 
   /**
    * Config cache
    */
 
-  var config = {};
+  var cache = {};
 
   /**
    * Load package.json, caching results to avoid multiple
    * calls to the file system
    */
 
-  if (typeof config.pkg === 'undefined') {
-    config.pkg = require('load-pkg').sync(process.cwd());
+  if (typeof cache.pkg === 'undefined') {
+    cache.pkg = require('load-pkg').sync(process.cwd());
   }
 
   /**
    * Get keys from `dependencies`
    */
 
-  if (typeof config.keys === 'undefined') {
-    config.keys = utils.keys(config.pkg.dependencies || {});
+  if (typeof cache.keys === 'undefined') {
+    cache.keys = utils.keys(cache.pkg.dependencies || {});
   }
 
   /**
@@ -69,22 +69,16 @@ module.exports = function(options) {
       opts = utils.extend({}, this.options, opts);
     }
 
-    // allow a prop-string to be passed: eg: `related("a.b.c")`,
-    // so that `get()` can resolve the value from the context
-    if (this && this.context && typeof repos === 'string') {
-      var res = utils.get(this.context, [configProp, repos].join('.'));
-      if (res) repos = res;
-    }
-
     opts.remove = utils.arrayify(opts.remove);
     if (opts.remove.length) {
       utils.remove(repos, opts.remove);
     }
 
     var deps = reflinks.sync(repos, opts);
-
     if (!repos || !repos.length) {
-      return typeof cb === 'function' ? cb(null, deps) : deps;
+      return typeof cb === 'function'
+        ? cb(null, deps)
+        : deps;
     }
 
     // generate reflinks from npm packages
@@ -108,7 +102,7 @@ module.exports = function(options) {
    */
 
   reflinks.sync = function(repos, opts) {
-    if (!config.keys.length) return '';
+    if (!cache.keys.length) return '';
     repos = repos ? utils.arrayify(repos) : null;
     var keys = [];
 
@@ -116,12 +110,12 @@ module.exports = function(options) {
     if (len) {
       while (len--) {
         var name = repos[len];
-        if (config.keys.indexOf(name) !== -1) {
+        if (cache.keys.indexOf(name) !== -1) {
           keys.push(name);
         }
       }
     } else {
-      keys = config.keys;
+      keys = cache.keys;
     }
 
     if (opts && opts.verbose && opts.sync) {
@@ -152,7 +146,20 @@ module.exports = function(options) {
       spinner('creating reference links from npm data');
     }
 
-    utils.getPkgs(repos, function(err, pkgs) {
+    var len = repos.length, i = -1;
+    var notStored = [];
+    var stored = '';
+
+    while (++i < len) {
+      var repo = repos[i];
+      if (store.has(['reflinks', repo])) {
+        stored += store.get(['reflinks', repo]);
+      } else {
+        notStored.push(repo);
+      }
+    }
+
+    utils.getPkgs(notStored, function(err, pkgs) {
       if (err) {
         console.error(colors.red('helper-reflinks: %j'), err);
         return cb(err);
@@ -165,6 +172,7 @@ module.exports = function(options) {
       utils.reduce(pkgs, [], function(acc, pkg, next) {
         var link = utils.referenceLink(pkg.name, pkg.homepage);
         link = link.replace(/#readme$/, '');
+        store.set(['reflinks', pkg.name], link);
         next(null, acc.concat(link));
       }, function(err, arr) {
         if (err) return cb(err);
@@ -172,7 +180,11 @@ module.exports = function(options) {
         if (opts.verbose) {
           stopSpinner(colors.green(success) + ' created list of reference links from npm data\n');
         }
-        cb(null, arr.join('\n'));
+
+        var res = arr.join('\n');
+        res += stored;
+
+        cb(null, res);
       });
     });
   }
@@ -190,10 +202,16 @@ module.exports = function(options) {
     var res = '';
     while (len--) {
       var dep = keys[i++];
-      var ele = node_modules(dep);
-      var ref = homepage(ele);
-      if (ref) {
-        res += utils.referenceLink(ref.repo, ref.url) + '\n';
+      if (store.has(['reflinks', dep])) {
+        res += store.get(['reflinks', dep]);
+      } else {
+        var ele = node_modules(dep);
+        var ref = homepage(ele);
+        if (ref) {
+          var link = utils.referenceLink(ref.repo, ref.url);
+          store.set(['reflinks', ref.repo], link);
+          res += link + '\n';
+        }
       }
     }
     return res;
@@ -210,7 +228,7 @@ module.exports = function(options) {
     try {
       var fp = path.resolve('node_modules', name, 'package.json');
       return require(fp);
-    } catch(err) {}
+    } catch (err) {}
     return {};
   }
 
@@ -236,7 +254,7 @@ module.exports = function(options) {
   function spinner(msg) {
     var arr = ['|', '/', '-', '\\', '-'];
     var len = arr.length, i = 0;
-    spinner.timer = setInterval(function () {
+    spinner.timer = setInterval(function() {
       process.stdout.clearLine();
       process.stdout.cursorTo(1);
       process.stdout.write('\u001b[0G ' + arr[i++ % len] + ' ' + msg);

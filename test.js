@@ -9,10 +9,10 @@
 
 require('mocha');
 require('should');
+var _ = require('lodash');
+var assemble = require('assemble-core');
 var handlebars = require('handlebars');
 var helper = require('./');
-var assemble = require('assemble-core');
-var _ = require('lodash');
 var reflinks, app;
 
 function render(str, settings, ctx, cb) {
@@ -33,25 +33,25 @@ describe('async', function() {
     reflinks('').should.match(/async/);
   });
 
-  it('should generate reflinks for a repo:', function (done) {
+  it('should generate reflinks for a repo:', function (cb) {
     reflinks('async', function  (err, res) {
       res.should.equal('[async]: https://github.com/caolan/async');
-      done();
+      cb();
     });
   });
 
-  it('should work as an async helper:', function (done) {
+  it('should work as an async helper:', function (cb) {
     render('<%= reflinks() %>', {imports: {reflinks: reflinks}}, function (err, res) {
       res.should.match(/async/);
-      done();
+      cb();
     })
   });
 
-  it('should combine both node_modules and with specified repos:', function (done) {
+  it('should combine both node_modules and with specified repos:', function (cb) {
     render('<%= reflinks("", {node_modules: true}) %>', {imports: {reflinks: reflinks}}, function (err, res) {
       res.should.match(/async/);
       res.should.match(/load-pkg/);
-      done();
+      cb();
     })
   });
 });
@@ -134,23 +134,5 @@ describe('helper', function () {
         res.content.should.match(/\[micromatch\]/);
         cb();
       });
-    cb();
-  });
-
-  it('should use configProp:', function (cb) {
-    this.timeout(2000);
-
-    app.asyncHelper('reflinks', helper({
-      configProp: 'foo'
-    }));
-
-    app.data('foo.a.b.c', ['micromatch']);
-    app.post('xyz', {content: 'foo <%= reflinks("a.b.c") %> bar'})
-      .render(function (err, res) {
-        if (err) return cb(err);
-        res.content.should.match(/\[micromatch\]/);
-        cb();
-      });
-    cb();
   });
 });
