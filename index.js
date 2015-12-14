@@ -153,7 +153,7 @@ module.exports = function(options) {
     while (++i < len) {
       var repo = repos[i];
       if (store.has(['reflinks', repo])) {
-        stored += store.get(['reflinks', repo]);
+        stored += store.get(['reflinks', repo]) + '\n';
       } else {
         notStored.push(repo);
       }
@@ -203,7 +203,7 @@ module.exports = function(options) {
     while (len--) {
       var dep = keys[i++];
       if (store.has(['reflinks', dep])) {
-        res += store.get(['reflinks', dep]);
+        res += store.get(['reflinks', dep]) + '\n';
       } else {
         var ele = node_modules(dep);
         var ref = homepage(ele);

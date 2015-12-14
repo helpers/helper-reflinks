@@ -1,7 +1,7 @@
 {
   "name": "helper-reflinks",
   "description": "Template helper for generating a list of markdown formatted reference links to github repos for the tree of dependencies and devDependencies listed in package.json.",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "homepage": "https://github.com/helpers/helper-reflinks",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "helpers/helper-reflinks",
