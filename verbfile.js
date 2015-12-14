@@ -1,16 +1,23 @@
 'use strict';
 
-var verb = require('verb');
+module.exports = function(verb, base, env) {
+  verb.helper('tag', function(str) {
+    return '{%= ' + str;
+  });
 
-verb.helper('shorten', function (str) {
-  return str.split('helper-').join('');
-});
+  verb.helper('nickname', function(name) {
+    return name.split('helper-').join('');
+  });
 
-verb.helper('tag', function (str) {
-  return '{%= ' + str;
-});
-
-verb.task('default', function() {
-  verb.src('.verb*.md')
-    .pipe(verb.dest('./'));
-});
+  verb.task('default', function(cb) {
+    verb.toStream('docs', function(key, view) {
+        return key === '.verb';
+      })
+      .pipe(verb.renderFile())
+      .on('error', cb)
+      .pipe(verb.pipeline())
+      .on('error', cb)
+      .pipe(verb.dest('.'))
+      .on('finish', cb);
+  });
+};
