@@ -1,23 +1,15 @@
 'use strict';
 
-module.exports = function(verb, base, env) {
+module.exports = function(verb) {
+  verb.invoke('verb-generate-readme');
+
   verb.helper('tag', function(str) {
     return '{%= ' + str;
   });
 
   verb.helper('nickname', function(name) {
-    return name.split('helper-').join('');
+    return name.slice('helper-'.length);
   });
 
-  verb.task('default', function(cb) {
-    verb.toStream('docs', function(key, view) {
-        return key === '.verb';
-      })
-      .pipe(verb.renderFile())
-      .on('error', cb)
-      .pipe(verb.pipeline())
-      .on('error', cb)
-      .pipe(verb.dest('.'))
-      .on('finish', cb);
-  });
+  verb.task('default', ['readme']);
 };
