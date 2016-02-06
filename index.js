@@ -247,7 +247,8 @@ module.exports = function(options) {
     } else if (typeof pkg.repository === 'object') {
       res = utils.parse(pkg.repository.url);
     }
-    res.url = utils.stringify(res.user, res.repo);
+    var user = res.owner || res.user;
+    res.url = utils.stringify(user, res.repo);
     return res;
   }
 
