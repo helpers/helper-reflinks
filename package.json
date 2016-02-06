@@ -23,7 +23,7 @@
   "dependencies": {
     "ansi-colors": "^0.1.0",
     "async-array-reduce": "^0.1.0",
-    "data-store": "^0.13.0",
+    "data-store": "^0.14.0",
     "extend-shallow": "^2.0.1",
     "get-pkgs": "^0.3.0",
     "get-value": "^2.0.3",
@@ -36,12 +36,12 @@
     "success-symbol": "^0.1.0"
   },
   "devDependencies": {
-    "assemble-core": "^0.5.0",
+    "assemble-core": "^0.11.2",
     "engine-base": "^0.1.2",
     "engine-handlebars": "^0.8.0",
     "gulp-format-md": "^0.1.5",
     "handlebars": "^4.0.5",
-    "lodash": "^3.10.1",
+    "lodash": "^4.2.1",
     "mocha": "*",
     "should": "*"
   },
@@ -62,13 +62,11 @@
     "verb"
   ],
   "verb": {
-    "layout": "full",
+    "layout": "default",
     "plugins": [
       "gulp-format-md"
     ],
-    "toc": {
-      "insert": true
-    },
+    "toc": true,
     "related": {
       "list": [
         "helper-related",
