@@ -152,8 +152,10 @@ module.exports = function(options) {
 
     while (++i < len) {
       var repo = repos[i];
-      if (store.has(['reflinks', repo])) {
-        stored += store.get(['reflinks', repo]) + '\n';
+      var key = repo.split('.').join('\\.');
+
+      if (store.has(['reflinks', key])) {
+        stored += store.get(['reflinks', key]) + '\n';
       } else {
         notStored.push(repo);
       }
@@ -202,14 +204,15 @@ module.exports = function(options) {
     var res = '';
     while (len--) {
       var dep = keys[i++];
-      if (store.has(['reflinks', dep])) {
-        res += store.get(['reflinks', dep]) + '\n';
+      var key = dep.split('.').join('\\.');
+      if (store.has(['reflinks', key])) {
+        res += store.get(['reflinks', key]) + '\n';
       } else {
         var ele = node_modules(dep);
         var ref = homepage(ele);
         if (ref) {
           var link = utils.referenceLink(ref.repo, ref.url);
-          store.set(['reflinks', ref.repo], link);
+          store.set(['reflinks', key], link);
           res += link + '\n';
         }
       }

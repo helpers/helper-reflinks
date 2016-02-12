@@ -10,6 +10,7 @@
 require('mocha');
 require('should');
 var _ = require('lodash');
+var assert = require('assert');
 var assemble = require('assemble-core');
 var handlebars = require('handlebars');
 var helper = require('./');
@@ -35,7 +36,7 @@ describe('async', function() {
 
   it('should generate reflinks for a repo:', function(cb) {
     reflinks('async', function(err, res) {
-      res.should.equal('[async]: https://github.com/caolan/async\n');
+      assert.equal(res, '[async]: https://github.com/caolan/async\n');
       cb();
     });
   });
