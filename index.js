@@ -205,13 +205,15 @@ module.exports = function(options) {
     while (len--) {
       var dep = keys[i++];
       var key = dep.split('.').join('\\.');
+
       if (store.has(['reflinks', key])) {
         res += store.get(['reflinks', key]) + '\n';
+
       } else {
         var ele = node_modules(dep);
         var ref = homepage(ele);
         if (ref) {
-          var link = utils.referenceLink(ref.repo, ref.url);
+          var link = utils.referenceLink(dep, ref.url);
           store.set(['reflinks', key], link);
           res += link + '\n';
         }
