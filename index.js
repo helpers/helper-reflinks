@@ -153,9 +153,10 @@ module.exports = function(options) {
     while (++i < len) {
       var repo = repos[i];
       var key = repo.split('.').join('\\.');
+      var data = store.data.reflinks || {};
 
-      if (store.has(['reflinks', key])) {
-        stored += store.get(['reflinks', key]) + '\n';
+      if (data[repo]) {
+        stored += data[repo] + '\n';
       } else {
         notStored.push(repo);
       }
@@ -178,13 +179,12 @@ module.exports = function(options) {
         next(null, acc.concat(link));
       }, function(err, arr) {
         if (err) return cb(err);
-
         if (opts.verbose) {
           stopSpinner(colors.green(success) + ' created list of reference links from npm data\n');
         }
 
         var res = arr.join('\n');
-        res += stored;
+        res += '\n' + stored;
 
         cb(null, res);
       });
@@ -208,13 +208,13 @@ module.exports = function(options) {
 
       if (store.has(['reflinks', key])) {
         res += store.get(['reflinks', key]) + '\n';
-
       } else {
-        var ele = node_modules(dep);
-        var ref = homepage(ele);
+        var pkgObj = node_modules(dep);
+        var ref = homepage(pkgObj);
         if (ref) {
-          var link = utils.referenceLink(dep, ref.url);
-          store.set(['reflinks', key], link);
+          var name = pkgObj.name;
+          var link = utils.referenceLink(name, ref.url);
+          store.set(['reflinks', name], link);
           res += link + '\n';
         }
       }
@@ -253,7 +253,7 @@ module.exports = function(options) {
       res = utils.parse(pkg.repository.url);
     }
     var user = res.owner || res.user;
-    res.url = utils.stringify(user, res.repo);
+    res.url = utils.stringify(user, res.name);
     return res;
   }
 
