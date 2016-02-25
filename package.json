@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "ansi-colors": "^0.1.0",
+    "arr-union": "^3.1.0",
     "async-array-reduce": "^0.1.0",
     "data-store": "^0.14.0",
     "extend-shallow": "^2.0.1",

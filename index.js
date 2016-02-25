@@ -69,6 +69,8 @@ module.exports = function(options) {
       opts = utils.extend({}, this.options, opts);
     }
 
+    repos = utils.union([], opts.reflinks, repos);
+
     opts.remove = utils.arrayify(opts.remove);
     if (opts.remove.length) {
       utils.remove(repos, opts.remove);
