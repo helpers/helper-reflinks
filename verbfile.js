@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function(verb) {
-  verb.extendWith('verb-generate-readme');
+  verb.extendWith('verb-readme-generator');
 
   verb.helper('tag', function(str) {
     return '{%= ' + str;
