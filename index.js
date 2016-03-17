@@ -55,15 +55,19 @@ module.exports = function(options) {
 
   function reflinks(repos, opts, cb) {
     if (typeof repos === 'function') {
-      return reflinks(null, {}, repos);
+      return reflinks.call(this, null, {}, repos);
     }
 
     if (typeof opts === 'function') {
-      return reflinks(repos, {}, opts);
+      return reflinks.call(this, repos, {}, opts);
     }
 
     repos = repos || [];
     opts = utils.extend({}, options, opts);
+
+    if (typeof opts.verbose === 'undefined') {
+      opts.verbose = true;
+    }
 
     if (this && this.options) {
       opts = utils.extend({}, this.options, opts);
@@ -109,9 +113,11 @@ module.exports = function(options) {
     var keys = [];
 
     var len = repos && repos.length;
+    var idx = -1;
+
     if (len) {
-      while (len--) {
-        var name = repos[len];
+      while (++idx < len) {
+        var name = repos[idx];
         if (cache.keys.indexOf(name) !== -1) {
           keys.push(name);
         }
@@ -277,8 +283,7 @@ module.exports = function(options) {
   }
 
   if (utils.isValidGlob(options)) {
-    reflinks.apply(null, arguments);
-    return;
+    return reflinks.apply(null, arguments);
   }
 
   /**
