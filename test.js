@@ -77,7 +77,6 @@ describe('sync', function() {
   });
 });
 
-
 describe('helper', function() {
   this.slow(500);
 

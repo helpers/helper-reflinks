@@ -21,16 +21,16 @@ require = fn;
  * Utils
  */
 
-utils.keys = function (o) {
+utils.keys = function(o) {
   return Object.keys(o).sort();
 };
 
-utils.arrayify = function (val) {
+utils.arrayify = function(val) {
   if (!val) return [];
   return Array.isArray(val) ? val : [val];
 };
 
-utils.remove = function (arr, items) {
+utils.remove = function(arr, items) {
   var len = arr.length;
   while (len--) {
     if (items.indexOf(arr[len]) > -1) {
