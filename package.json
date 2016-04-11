@@ -1,7 +1,7 @@
 {
   "name": "helper-reflinks",
   "description": "Template helper for generating a list of markdown formatted reference links to github repos for the tree of dependencies and devDependencies listed in package.json.",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "homepage": "https://github.com/helpers/helper-reflinks",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "helpers/helper-reflinks",
@@ -26,8 +26,8 @@
     "async-array-reduce": "^0.1.0",
     "data-store": "^0.15.5",
     "extend-shallow": "^2.0.1",
-    "get-pkgs": "^0.4.0",
-    "get-value": "^2.0.3",
+    "get-pkgs": "^0.5.0",
+    "get-value": "^2.0.5",
     "is-valid-glob": "^0.3.0",
     "lazy-cache": "^1.0.3",
     "load-pkg": "^3.0.1",
@@ -37,14 +37,14 @@
     "success-symbol": "^0.1.0"
   },
   "devDependencies": {
-    "assemble-core": "^0.11.2",
+    "assemble-core": "^0.16.1",
     "engine-base": "^0.1.2",
     "engine-handlebars": "^0.8.0",
-    "gulp-format-md": "^0.1.5",
+    "gulp-format-md": "^0.1.7",
     "handlebars": "^4.0.5",
-    "lodash": "^4.2.1",
-    "mocha": "*",
-    "should": "*"
+    "lodash": "^4.9.0",
+    "mocha": "^2.4.5",
+    "should": "^8.3.0"
   },
   "keywords": [
     "docs",
