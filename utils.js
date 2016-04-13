@@ -4,6 +4,7 @@ var utils = require('lazy-cache')(require);
 var fn = require;
 
 require = utils;
+require('ansi-magenta', 'magenta');
 require('arr-union', 'union');
 require('data-store', 'Store');
 require('success-symbol', 'success');
@@ -15,6 +16,7 @@ require('is-valid-glob');
 require('markdown-reference', 'referenceLink');
 require('get-value', 'get');
 require('get-pkgs');
+require('time-diff', 'Time');
 require = fn;
 
 /**

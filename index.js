@@ -15,6 +15,7 @@ var utils = require('./utils');
 module.exports = function(options) {
   options = options || {};
   var store = new utils.Store('helper-reflinks');
+  var time = new utils.Time();
 
   /**
    * Config cache
@@ -54,6 +55,8 @@ module.exports = function(options) {
    */
 
   function reflinks(repos, opts, cb) {
+    time.start('helper');
+
     if (typeof repos === 'function') {
       return reflinks.call(this, null, {}, repos);
     }
@@ -109,7 +112,10 @@ module.exports = function(options) {
 
   reflinks.sync = function(repos, opts) {
     if (!cache.keys.length) return '';
+    time.start('helper');
+
     repos = repos ? utils.arrayify(repos) : null;
+
     var keys = [];
 
     var len = repos && repos.length;
@@ -127,7 +133,7 @@ module.exports = function(options) {
     }
 
     if (opts && opts.verbose && opts.sync) {
-      console.log(' ' + colors.green(success) + ' created ' + keys.length + ' reference links from node_modules packages');
+      console.log(' ' + colors.green(success) + ' created ' + keys.length + ' reference links from node_modules packages ' + utils.magenta(time.end('helper')));
     }
     return linkifyDeps(keys);
   };
@@ -160,7 +166,6 @@ module.exports = function(options) {
 
     while (++i < len) {
       var repo = repos[i];
-      var key = repo.split('.').join('\\.');
       var data = store.data.reflinks || {};
 
       if (data[repo]) {
@@ -188,7 +193,8 @@ module.exports = function(options) {
       }, function(err, arr) {
         if (err) return cb(err);
         if (opts.verbose) {
-          stopSpinner(colors.green(success) + ' created list of reference links from npm data\n');
+          var diff = utils.magenta(time.end('helper'));
+          stopSpinner(colors.green(success) + ' created list of reference links from npm data ' + diff + '\n');
         }
 
         var res = arr.join('\n');
