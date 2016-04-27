@@ -7,294 +7,36 @@
 
 'use strict';
 
-var path = require('path');
-var success = require('success-symbol');
-var colors = require('ansi-colors');
 var utils = require('./utils');
 
-module.exports = function(options) {
-  options = options || {};
-  var store = new utils.Store('helper-reflinks');
-  var time = new utils.Time();
-
-  /**
-   * Config cache
-   */
-
-  var cache = {};
-
-  /**
-   * Load package.json, caching results to avoid multiple
-   * calls to the file system
-   */
-
-  if (typeof cache.pkg === 'undefined') {
-    cache.pkg = require('load-pkg').sync(process.cwd());
-  }
-
-  /**
-   * Get keys from `dependencies`
-   */
-
-  if (typeof cache.keys === 'undefined') {
-    cache.keys = utils.keys(cache.pkg.dependencies || {});
-  }
-
-  /**
-   * Generate a reflink or list of reflinks for npm modules.
-   *
-   *   - If no repo names are passed, reflinks are generated for all locally-installed
-   *     dependencies listed in package.json
-   *   - If names are passed, reflinks are generated both from matching locally-
-   *     installed dependencies and, if necessary, by querying npm.
-   *
-   * @param  {String|Array} `repos` Repo name or array of names.
-   * @param  {Object} `options`
-   * @param  {Function} `cb`
-   * @return {Array}
-   */
-
-  function reflinks(repos, opts, cb) {
-    time.start('helper');
-
-    if (typeof repos === 'function') {
-      return reflinks.call(this, null, {}, repos);
+module.exports = function(config) {
+  return function(names, options, cb) {
+    if (typeof names === 'function') {
+      cb = names;
+      options = {};
+      names = null;
     }
 
-    if (typeof opts === 'function') {
-      return reflinks.call(this, repos, {}, opts);
+    if (typeof options === 'function') {
+      cb = options;
+      options = {};
     }
 
-    repos = repos || [];
-    opts = utils.extend({}, options, opts);
+    var app = this || {};
+    var opts = utils.extend({}, config, options, app.options);
+    var ctx = utils.extend({}, app.context);
 
-    if (typeof opts.verbose === 'undefined') {
-      opts.verbose = true;
+    names = utils.arrayify(names);
+    names = utils.union([], names, opts.names, ctx.names);
+
+    if (names.length === 0) {
+      cb(null, '');
+      return;
     }
 
-    if (this && this.options) {
-      opts = utils.extend({}, this.options, opts);
-    }
-
-    repos = utils.union([], opts.reflinks, repos);
-
-    opts.remove = utils.arrayify(opts.remove);
-    if (opts.remove.length) {
-      utils.remove(repos, opts.remove);
-    }
-
-    var deps = reflinks.sync(repos, opts);
-    if (!repos || !repos.length) {
-      return typeof cb === 'function'
-        ? cb(null, deps)
-        : deps;
-    }
-
-    // generate reflinks from npm packages
-    getRepos(utils.arrayify(repos), opts, function(err, res) {
+    utils.reflinks(names, opts, function(err, links) {
       if (err) return cb(err);
-      if (opts.node_modules === true) {
-        res += '\n' + deps;
-      }
-      cb(null, res);
+      cb(null, links.join('\n'));
     });
-  }
-
-  /**
-   * Generate a list of markdown-formatted reflinks for all
-   * dependencies currently listed in `node_modules`.
-   *
-   * @param  {Array|String} `repos` Repo name or array of repo names
-   * @param  {Object} `opts`
-   * @param  {Function} `cb` Callback function
-   * @return {String}
-   */
-
-  reflinks.sync = function(repos, opts) {
-    if (!cache.keys.length) return '';
-    time.start('helper');
-
-    repos = repos ? utils.arrayify(repos) : null;
-
-    var keys = [];
-
-    var len = repos && repos.length;
-    var idx = -1;
-
-    if (len) {
-      while (++idx < len) {
-        var name = repos[idx];
-        if (cache.keys.indexOf(name) !== -1) {
-          keys.push(name);
-        }
-      }
-    } else {
-      keys = cache.keys;
-    }
-
-    if (opts && opts.verbose && opts.sync) {
-      console.log(' ' + colors.green(success) + ' created ' + keys.length + ' reference links from node_modules packages ' + utils.magenta(time.end('helper')));
-    }
-    return linkifyDeps(keys);
   };
-
-  /**
-   * Get package.json files from npm for an array of repositories,
-   * and use them to generate a list of markdown-formatted reflinks.
-   *
-   * @param  {Array|String} `repos` Repo name or array of repo names
-   * @param  {Object} `opts`
-   * @param  {Function} `cb` Callback function
-   * @return {String}
-   */
-
-  function getRepos(repos, opts, cb) {
-    if (typeof opts === 'function') {
-      cb = opts;
-      opts = {};
-    }
-
-    opts = opts || {};
-
-    if (opts.verbose) {
-      spinner('creating reference links from npm data');
-    }
-
-    var len = repos.length, i = -1;
-    var notStored = [];
-    var stored = '';
-
-    while (++i < len) {
-      var repo = repos[i];
-      var data = store.data.reflinks || {};
-
-      if (data[repo]) {
-        stored += data[repo] + '\n';
-      } else {
-        notStored.push(repo);
-      }
-    }
-
-    utils.getPkgs(notStored, function(err, pkgs) {
-      if (err) {
-        console.error(colors.red('helper-reflinks: %j'), err);
-        return cb(err);
-      }
-
-      pkgs = pkgs.sort(function(a, b) {
-        return a.name.localeCompare(b.name);
-      });
-
-      utils.reduce(pkgs, [], function(acc, pkg, next) {
-        var link = utils.referenceLink(pkg.name, pkg.homepage);
-        link = link.replace(/#readme$/, '');
-        store.set(['reflinks', pkg.name], link);
-        next(null, acc.concat(link));
-      }, function(err, arr) {
-        if (err) return cb(err);
-        if (opts.verbose) {
-          var diff = utils.magenta(time.end('helper'));
-          stopSpinner(colors.green(success) + ' created list of reference links from npm data ' + diff + '\n');
-        }
-
-        var res = arr.join('\n');
-        res += '\n' + stored;
-
-        cb(null, res);
-      });
-    });
-  }
-
-  /**
-   * Generate a reference link for each module name in the array
-   * of `keys`, and return a formatted list.
-   *
-   * @param  {Array} `keys` Array of module names.
-   * @return {String} Markdown reflinks
-   */
-
-  function linkifyDeps(keys) {
-    var len = keys.length, i = 0;
-    var res = '';
-    while (len--) {
-      var dep = keys[i++];
-      var key = dep.split('.').join('\\.');
-
-      if (store.has(['reflinks', key])) {
-        res += store.get(['reflinks', key]) + '\n';
-      } else {
-        var pkgObj = node_modules(dep);
-        var ref = homepage(pkgObj);
-        if (ref) {
-          var name = pkgObj.name;
-          var link = utils.referenceLink(name, ref.url);
-          store.set(['reflinks', name], link);
-          res += link + '\n';
-        }
-      }
-    }
-    return res;
-  }
-
-  /**
-   * Get the package.json from the given module in node_modules.
-   *
-   * @param  {String} `name` The name of the module
-   * @return {Object}
-   */
-
-  function node_modules(name) {
-    try {
-      var fp = path.resolve('node_modules', name, 'package.json');
-      return require(fp);
-    } catch (err) {}
-    return {};
-  }
-
-  /**
-   * Get the homepage from the given module in node_modules.
-   *
-   * @param  {Object} `pkg` package.json object for the module
-   * @return {Object}
-   */
-
-  function homepage(pkg) {
-    var res = {};
-    if (!pkg.repository) return null;
-    if (typeof pkg.repository === 'string') {
-      res = utils.parse(pkg.repository);
-    } else if (typeof pkg.repository === 'object') {
-      res = utils.parse(pkg.repository.url);
-    }
-    var user = res.owner || res.user;
-    res.url = utils.stringify(user, res.name);
-    return res;
-  }
-
-  function spinner(msg) {
-    var arr = ['|', '/', '-', '\\', '-'];
-    var len = arr.length, i = 0;
-    spinner.timer = setInterval(function() {
-      process.stdout.clearLine();
-      process.stdout.cursorTo(1);
-      process.stdout.write('\u001b[0G ' + arr[i++ % len] + ' ' + msg);
-    }, 200);
-  }
-
-  function stopSpinner(msg) {
-    process.stdout.clearLine();
-    process.stdout.cursorTo(1);
-    process.stdout.write('\u001b[2K' + msg);
-    clearInterval(spinner.timer);
-  }
-
-  if (utils.isValidGlob(options)) {
-    return reflinks.apply(null, arguments);
-  }
-
-  /**
-   * Expose `reflinks`
-   */
-
-  return reflinks;
 };

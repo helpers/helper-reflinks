@@ -1,10 +1,10 @@
-var reflinks = require('./');
+var reflinks = require('./')();
 var pkg = require('./package');
 
 var deps = Object.keys(pkg.dependencies);
 
-reflinks(deps, {verbose: true}, function(err, links) {
-  if (err) return console.log(err);
-  console.log()
+reflinks(deps, function(err, links) {
+  if (err) throw err;
   console.log(links)
+  console.log()
 });

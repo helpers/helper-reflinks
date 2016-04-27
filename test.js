@@ -10,11 +10,25 @@
 require('mocha');
 require('should');
 var _ = require('lodash');
+var path = require('path');
 var assert = require('assert');
 var assemble = require('assemble-core');
 var handlebars = require('handlebars');
 var helper = require('./');
-var reflinks, app;
+var app;
+
+var reflinks = function(options) {
+  return function(names) {
+    var fn = helper(options || {verbose: false});
+    var args = [].slice.call(arguments);
+    if (typeof names !== 'string' && !Array.isArray(names)) {
+      var pkg = require(path.resolve(process.cwd(), 'package'));
+      names = Object.keys(pkg.dependencies || pkg.devDependencies || []);
+      args = names.concat(args);
+    }
+    return fn.apply(null, args);
+  };
+};
 
 function render(str, settings, ctx, cb) {
   if (typeof ctx === 'function') {
@@ -26,54 +40,19 @@ function render(str, settings, ctx, cb) {
 describe('async', function() {
   this.slow(500);
 
-  beforeEach(function() {
-    reflinks = helper();
-  });
-
-  it('should generate reflinks:', function() {
-    reflinks('').should.match(/async/);
-  });
-
-  it('should generate reflinks for a repo:', function(cb) {
-    reflinks('async', function(err, res) {
-      assert(/async/.test(res));
+  it('should deal with an empty string:', function(cb) {
+    reflinks()('', function(err, links) {
+      if (err) return cb(err);
+      assert.equal(links, '');
       cb();
     });
   });
 
-  it('should work as an async helper:', function(cb) {
-    render('<%= reflinks() %>', {imports: {reflinks: reflinks}}, function(err, res) {
-      res.should.match(/async/);
+  it('should create a reflink for a name as a string:', function(cb) {
+    reflinks()('async', function(err, links) {
+      assert(/async/.test(links));
       cb();
-    })
-  });
-
-  it('should combine both node_modules and with specified repos:', function(cb) {
-    render('<%= reflinks("", {node_modules: true}) %>', {imports: {reflinks: reflinks}}, function(err, res) {
-      res.should.match(/async/);
-      res.should.match(/load-pkg/);
-      cb();
-    })
-  });
-});
-
-describe('sync', function() {
-  beforeEach(function() {
-    reflinks = helper();
-  });
-
-  it('should return a formatted reflinks statement:', function() {
-    reflinks.sync('').should.match(/async/);
-  });
-
-  it('should work as a lodash helper:', function() {
-    var actual = _.template('<%= reflinks("") %>', {imports: {reflinks: reflinks}})();
-    actual.should.match(/async/);
-  });
-
-  it('should work as a handlebars helper:', function() {
-    handlebars.registerHelper('reflinks', reflinks);
-    handlebars.compile('{{reflinks ""}}')().should.match(/async/);
+    });
   });
 });
 
@@ -84,13 +63,14 @@ describe('helper', function() {
     app = assemble();
     app.engine('hbs', require('engine-handlebars'));
     app.engine('md', require('engine-base'));
+    app.disable('verbose');
 
     // custom view collections
     app.create('pages', {engine: 'hbs'});
     app.create('posts', {engine: 'md'});
 
     // add helper
-    app.asyncHelper('reflinks', helper(app.options));
+    app.asyncHelper('reflinks', reflinks(app.options));
   });
 
   it('should work with engine-handlebars:', function(cb) {
@@ -98,7 +78,7 @@ describe('helper', function() {
     app.page('abc', {content: 'foo {{reflinks list}} bar'})
       .render({list: ['micromatch']}, function(err, res) {
         if (err) return cb(err);
-        res.content.should.match(/\[micromatch\]/);
+        assert(/\[micromatch\]/.test(res.content));
         cb();
       });
   });
@@ -109,7 +89,7 @@ describe('helper', function() {
     app.page('abc', {content: 'foo {{reflinks list}} bar'})
       .render({list: ['micromatch', 'flflflfl']}, function(err, res) {
         if (err) return cb(err);
-        res.content.should.match(/\[micromatch\]/);
+        assert(/\[micromatch\]/.test(res.content));
         cb();
       });
   });
@@ -119,7 +99,7 @@ describe('helper', function() {
     app.post('xyz', {content: 'foo <%= reflinks(list) %> bar'})
       .render({list: ['micromatch']}, function(err, res) {
         if (err) return cb(err);
-        res.content.should.match(/\[micromatch\]/);
+        assert(/\[micromatch\]/.test(res.content));
         cb();
       });
   });
@@ -127,11 +107,13 @@ describe('helper', function() {
   it('should work using values from the context:', function(cb) {
     this.timeout(2000);
 
-    app.data('list', ['micromatch']);
-    app.post('xyz', {content: 'foo <%= reflinks(list) %> bar'})
+    app.data('verb.reflinks', ['micromatch', 'generate', 'verb']);
+    app.post('xyz', {content: 'foo <%= reflinks(verb.reflinks) %> bar'})
       .render(function(err, res) {
         if (err) return cb(err);
-        res.content.should.match(/\[micromatch\]/);
+        assert(/\[micromatch\]/.test(res.content));
+        assert(/\[generate\]/.test(res.content));
+        assert(/\[verb\]/.test(res.content));
         cb();
       });
   });
