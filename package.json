@@ -53,18 +53,12 @@
     "verb"
   ],
   "verb": {
-    "layout": "default",
+    "data": {
+      "alias": "reflinks"
+    },
     "plugins": [
       "gulp-format-md"
     ],
-    "toc": true,
-    "related": {
-      "list": [
-        "handlebars-helpers",
-        "helper-related",
-        "template-helpers"
-      ]
-    },
     "reflinks": [
       "assemble",
       "generate",
@@ -74,6 +68,21 @@
       "templates",
       "update",
       "verb"
-    ]
+    ],
+    "related": {
+      "list": [
+        "handlebars-helpers",
+        "helper-related",
+        "template-helpers"
+      ]
+    },
+    "toc": false,
+    "layout": "default",
+    "tasks": [
+      "readme"
+    ],
+    "lint": {
+      "reflinks": true
+    }
   }
 }
