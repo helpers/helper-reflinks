@@ -1,18 +1,14 @@
 # helper-reflinks [![NPM version](https://img.shields.io/npm/v/helper-reflinks.svg?style=flat)](https://www.npmjs.com/package/helper-reflinks) [![NPM downloads](https://img.shields.io/npm/dm/helper-reflinks.svg?style=flat)](https://npmjs.org/package/helper-reflinks) [![Build Status](https://img.shields.io/travis/helpers/helper-reflinks.svg?style=flat)](https://travis-ci.org/helpers/helper-reflinks)
 
-> Template helper for generating a list of markdown formatted reference links to github repos for the tree of dependencies and devDependencies listed in package.json.
+Async template helper for generating a list of markdown reference links.
 
 ## TOC
 
 - [Install](#install)
 - [Usage](#usage)
-- [Register the helper](#register-the-helper)
-  * [Templates](#templates)
+  * [templates](#templates)
   * [assemble](#assemble)
   * [verb](#verb)
-  * [handlebars](#handlebars)
-  * [Lo-Dash](#lo-dash)
-- [Example usage](#example-usage)
 - [Related projects](#related-projects)
 - [Contributing](#contributing)
 - [Building docs](#building-docs)
@@ -33,29 +29,24 @@ $ npm install helper-reflinks --save
 ## Usage
 
 ```js
-{%= reflinks() %}
-// or
-{%= reflinks('foo*') %}
+var reflinks = require('helper-reflinks');
 ```
 
-Results in a markdown-formatted list of reflinks to add to the bottom of a doc or readme:
+Since this is an async helper, it can only registered with engines that support async helpers:
 
-```
-[assemble]: https://github.com/assemble/assemble
-[filter-object]: https://github.com/jonschlinkert/filter-object
-[sort-object]: https://github.com/helpers/sort-object
-```
+* [assemble](#assemble)
+* [templates](#templates)
+* [verb](#verb)
 
-## Register the helper
+### templates
 
-> This should work with any engine, here are some examples
-
-### Templates
-
-Register the helper for use with [Templates](https://github.com/jonschlinkert/templates)
+Register the helper for use with [templates](https://github.com/jonschlinkert/templates)
 
 ```js
-template.helper('reflinks', require('helper-reflinks'));
+var templates = require('templates');
+var app = templates();
+
+app.asyncHelper('reflinks', reflinks());
 ```
 
 ### assemble
@@ -63,71 +54,26 @@ template.helper('reflinks', require('helper-reflinks'));
 To register the helper for use with [assemble](https://github.com/assemble/assemble) ^0.6.0:
 
 ```js
-assemble.helper('reflinks', require('helper-reflinks'));
+var assemble = require('assemble');
+var app = assemble();
+
+app.asyncHelper('reflinks', reflinks());
 ```
 
 ### verb
 
-Register the helper for use with [verb](https://github.com/assemble/verb):
+Register the helper for use with [verb](https://github.com/verbose/verb):
 
 ```js
 var verb = require('verb');
-verb.helper('reflinks', require('helper-reflinks'));
+var app = verb();
 
-verb.task('default', function() {
-  verb.src('.verb*.md')
-    .pipe(verb.dest('./'));
+app.asyncHelper('reflinks', reflinks());
+
+app.task('default', function() {
+  app.src('.verb*.md')
+    .pipe(app.dest('./'));
 });
-```
-
-### handlebars
-
-Register with [handlebars](https://github.com/wycats/handlebars.js/):
-
-```js
-var handlebars = require('handlebars');
-handlebars.registerHelper('reflinks', require('helper-reflinks'));
-```
-
-### Lo-Dash
-
-Register with [lodash](https://lodash.com/) or [underscore](https://github.com/jashkenas/underscore):
-
-```js
-// as a mixin
-_.mixin({reflinks: reflinksHelper});
-_.template('<%= _.reflinks("fixtures/*.txt") %>', {});
-//=> 'AAA\nBBB\nCCC'
-
-// passed on the context
-var settings = {imports: {reflinks: reflinksHelper}};
-_.template('<%= reflinks("fixtures/*.txt") %>', {reflinks: reflinksHelper});
-//=> 'AAA\nBBB\nCCC'
-
-// as an import
-var settings = {imports: {reflinks: reflinksHelper}};
-_.template('<%= reflinks("fixtures/*.txt") %>', {}, settings);
-//=> 'AAA\nBBB\nCCC'
-```
-
-## Example usage
-
-Handlebars:
-
-```handlebars
-{{reflinks ""}}
-```
-
-Lo-Dash or Underscore:
-
-```js
-<%= reflinks("") %>
-```
-
-Verb (lo-dash, with special delimiters to avoid delimiter collision in markdown docs):
-
-```js
-{%= reflinks('') %}
 ```
 
 ## Related projects
@@ -140,17 +86,17 @@ You might also be interested in these projects:
 
 ## Contributing
 
-Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/jonschlinkert/helper-reflinks/issues/new).
+Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/helpers/helper-reflinks/issues/new).
 
 ## Building docs
 
-Generate readme and API documentation with [verb](https://github.com/assemble/verb):
+Generate readme and API documentation with [verb](https://github.com/verbose/verb):
 
 ```sh
 $ npm install verb && npm run docs
 ```
 
-Or, if [verb](https://github.com/assemble/verb) is installed globally:
+Or, if [verb](https://github.com/verbose/verb) is installed globally:
 
 ```sh
 $ verb
@@ -178,4 +124,4 @@ Released under the [MIT license](https://github.com/helpers/helper-reflinks/blob
 
 ***
 
-_This file was generated by [verb](https://github.com/verbose/verb), v0.9.0, on April 13, 2016._
+_This file was generated by [verb](https://github.com/verbose/verb), v0.9.0, on April 27, 2016._
