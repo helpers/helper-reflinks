@@ -9,6 +9,20 @@
 
 var utils = require('./utils');
 
+/**
+ * Generate a reflink or list of reflinks for npm modules.
+ *
+ *   - If no repo names are passed, reflinks are generated for all locally-installed
+ *     dependencies listed in package.json
+ *   - If names are passed, reflinks are generated both from matching locally-
+ *     installed dependencies and, if necessary, by pulling them down from npm.
+ *
+ * @param  {String|Array} `repos` Repo name or array of names.
+ * @param  {Object} `options`
+ * @param  {Function} `cb`
+ * @return {Array}
+ */
+
 module.exports = function(config) {
   return function(names, options, cb) {
     if (typeof names === 'function') {
@@ -36,7 +50,7 @@ module.exports = function(config) {
 
     utils.reflinks(names, opts, function(err, links) {
       if (err) return cb(err);
-      cb(null, links.join('\n'));
+      cb(null, '\n\n' + links.join('\n'));
     });
   };
 };
