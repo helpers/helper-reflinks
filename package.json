@@ -11,6 +11,8 @@
   "license": "MIT",
   "files": [
     "index.js",
+    "LICENSE",
+    "README.md",
     "utils.js"
   ],
   "main": "index.js",
@@ -23,18 +25,18 @@
   "dependencies": {
     "arr-union": "^3.1.0",
     "extend-shallow": "^2.0.1",
-    "lazy-cache": "^1.0.3",
-    "reflinks": "^0.2.1"
+    "lazy-cache": "^2.0.1",
+    "reflinks": "^0.3.1"
   },
   "devDependencies": {
-    "assemble-core": "^0.17.1",
+    "assemble-core": "^0.25.0",
     "engine-base": "^0.1.2",
     "engine-handlebars": "^0.8.0",
-    "gulp-format-md": "^0.1.8",
+    "gulp-format-md": "^0.1.9",
     "handlebars": "^4.0.5",
-    "lodash": "^4.11.1",
-    "mocha": "^2.4.5",
-    "should": "^8.3.1"
+    "lodash": "^4.13.1",
+    "mocha": "^2.5.3",
+    "should": "^9.0.2"
   },
   "keywords": [
     "docs",
@@ -42,6 +44,8 @@
     "format",
     "generate",
     "generator",
+    "helper",
+    "helpers",
     "link",
     "links",
     "markdown",
@@ -49,6 +53,9 @@
     "ref",
     "reference",
     "reflink",
+    "reflinks",
+    "render",
+    "template",
     "templates",
     "verb"
   ],
@@ -67,7 +74,8 @@
       "micromatch",
       "templates",
       "update",
-      "verb"
+      "verb",
+      "verb-readme-generator"
     ],
     "related": {
       "list": [

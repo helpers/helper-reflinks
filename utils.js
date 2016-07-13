@@ -18,7 +18,7 @@ utils.keys = function(o) {
 };
 
 utils.arrayify = function(val) {
-  return (val ? (Array.isArray(val) ? val : [val]) : []).sort();
+  return [].concat(val || []).sort();
 };
 
 /**

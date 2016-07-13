@@ -48,9 +48,9 @@ module.exports = function(config) {
       return;
     }
 
-    utils.reflinks(names, opts, function(err, links) {
+    utils.reflinks(names, opts, function(err, res) {
       if (err) return cb(err);
-      cb(null, '\n\n' + links.join('\n'));
+      cb(null, '\n\n' + res.links.join('\n'));
     });
   };
 };
