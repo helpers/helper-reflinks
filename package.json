@@ -1,7 +1,7 @@
 {
   "name": "helper-reflinks",
   "description": "Async template helper for generating a list of markdown reference links.",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "homepage": "https://github.com/helpers/helper-reflinks",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "helpers/helper-reflinks",
