@@ -1,7 +1,7 @@
 {
   "name": "helper-reflinks",
   "description": "Async template helper for generating a list of markdown reference links.",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "homepage": "https://github.com/helpers/helper-reflinks",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "helpers/helper-reflinks",
@@ -17,26 +17,26 @@
   ],
   "main": "index.js",
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=8"
   },
   "scripts": {
     "test": "mocha"
   },
   "dependencies": {
     "arr-union": "^3.1.0",
-    "extend-shallow": "^2.0.1",
-    "lazy-cache": "^2.0.1",
-    "reflinks": "^0.3.1"
+    "extend-shallow": "3.0.2",
+    "lazy-cache": "2.0.2",
+    "reflinks": "^0.3.6"
   },
   "devDependencies": {
-    "assemble-core": "^0.25.0",
-    "engine-base": "^0.1.2",
-    "engine-handlebars": "^0.8.0",
-    "gulp-format-md": "^0.1.9",
-    "handlebars": "^4.0.5",
-    "lodash": "^4.13.1",
-    "mocha": "^2.5.3",
-    "should": "^9.0.2"
+    "assemble-core": "0.31.0",
+    "engine-base": "0.1.3",
+    "engine-handlebars": "0.8.2",
+    "gulp-format-md": "1.0.0",
+    "handlebars": "4.0.11",
+    "lodash": "4.17.10",
+    "mocha": "2.5.3",
+    "should": "13.2.1"
   },
   "keywords": [
     "docs",
