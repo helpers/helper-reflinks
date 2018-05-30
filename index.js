@@ -1,13 +1,8 @@
-/*!
- * helper-reflinks <https://github.com/helpers/helper-reflinks>
- *
- * Copyright (c) 2015, Jon Schlinkert.
- * Licensed under the MIT License.
- */
-
 'use strict';
 
-var utils = require('./utils');
+const union = require('arr-union');
+const reflinks = require('reflinks');
+const arrayify = val => [].concat(val || []).sort();
 
 /**
  * Generate a reflink or list of reflinks for npm modules.
@@ -36,19 +31,19 @@ module.exports = function(config) {
       options = {};
     }
 
-    var app = this || {};
-    var opts = utils.extend({}, config, options, app.options);
-    var ctx = utils.extend({}, app.context);
+    const app = this || {};
+    const opts = Object.assign({}, config, options, app.options);
+    const ctx = Object.assign({}, app.context);
 
-    names = utils.arrayify(names);
-    names = utils.union([], names, opts.names, ctx.names);
+    names = arrayify(names);
+    names = union([], names, opts.names, ctx.names);
 
     if (names.length === 0) {
       cb(null, '');
       return;
     }
 
-    utils.reflinks(names, opts, function(err, res) {
+    reflinks(names, opts, function(err, res) {
       if (err) return cb(err);
       cb(null, '\n\n' + res.links.join('\n'));
     });

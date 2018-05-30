@@ -1,41 +1,24 @@
-/*!
- * helper-reflinks <https://github.com/helpers/helper-reflinks>
- *
- * Copyright (c) 2014-2015, Jon Schlinkert.
- * Licensed under the MIT License.
- */
-
 'use strict';
 
 require('mocha');
-require('should');
-var _ = require('lodash');
-var path = require('path');
-var assert = require('assert');
-var assemble = require('assemble-core');
-var handlebars = require('handlebars');
-var helper = require('./');
-var app;
+const path = require('path');
+const assert = require('assert');
+const assemble = require('assemble-core');
+const helper = require('./');
+let app;
 
-var reflinks = function(options) {
+const reflinks = function(options) {
   return function(names) {
-    var fn = helper(options || {verbose: false});
-    var args = [].slice.call(arguments);
+    let fn = helper(options || {verbose: false});
+    let args = [].slice.call(arguments);
     if (typeof names !== 'string' && !Array.isArray(names)) {
-      var pkg = require(path.resolve(process.cwd(), 'package'));
+      let pkg = require(path.resolve(process.cwd(), 'package'));
       names = Object.keys(pkg.dependencies || pkg.devDependencies || []);
       args = names.concat(args);
     }
     return fn.apply(null, args);
   };
 };
-
-function render(str, settings, ctx, cb) {
-  if (typeof ctx === 'function') {
-    cb = ctx; ctx = {};
-  }
-  cb(null, _.template(str, settings)(ctx));
-}
 
 describe('async', function() {
   this.slow(500);
@@ -50,6 +33,7 @@ describe('async', function() {
 
   it('should create a reflink for a name as a string:', function(cb) {
     reflinks()('async', function(err, links) {
+      if (err) return cb(err);
       assert(/async/.test(links));
       cb();
     });
